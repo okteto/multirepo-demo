@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     db = client[database]
     coll = db['votes']
     coll.insert_one(event)
-
+    print("vote inserted")
     return {
         "statusCode": 200,
         "body": "Acepted!"
