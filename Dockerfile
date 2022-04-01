@@ -1,4 +1,4 @@
-FROM okteto/installer:1.4.1
+FROM okteto/pipeline-runner:1.0.0
 
 WORKDIR /src
 
