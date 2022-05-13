@@ -1,7 +1,7 @@
 icon: https://github.com/okteto/multirepo-demo/raw/main/lambda-icon.jpg
 deploy:
   - curl https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip > /tmp/sam.zip
-  - unzip aws-sam-cli-linux-x86_64.zip -d /tmp/sam-installation
+  - unzip sam.zip -d /tmp/sam-installation
   - ./tmp/sam-installation/install
   - sam --version
   - aws --version
