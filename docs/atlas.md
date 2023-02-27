@@ -4,4 +4,4 @@
 
 Okteto will automatically create a collection inside the database specified by the MONGODB_DATABASE secret. The name of the collection will be the name of your namespace. 
 
-To log into the database, click on the link in the `atlas` resource, and log in with your Atlas credentials.
+To log into the database, click on the link in the atlas resource, and log in with your Atlas credentials.
