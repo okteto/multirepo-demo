@@ -4,8 +4,25 @@ deploy:
   - sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --s3-prefix "${OKTETO_NAMESPACE}" --stack-name "${OKTETO_NAMESPACE}-okteto-lambda" --parameter-overrides ParameterKey=MongoDBUsername,ParameterValue=${MONGODB_USERNAME} ParameterKey=MongoDBPassword,ParameterValue=${MONGODB_PASSWORD} ParameterKey=MongoDBDatabase,ParameterValue=${MONGODB_DATABASE} ParameterKey=MongoDBHost,ParameterValue=${MONGODB_HOST}
   - aws cloudformation describe-stacks --region us-east-1 --stack-name ${OKTETO_NAMESPACE}-okteto-lambda --query "Stacks[0].Outputs[0].OutputValue" --output text > lambda-url
   - okteto pipeline deploy --name vote -r https://github.com/okteto/microservices-demo --branch lambda --var LAMBDA_URL=`cat lambda-url` -f vote/okteto-pipeline.yml
-  - okteto pipeline deploy --name result -r https://github.com/okteto/microservices-demo --branch lambda -f result/okteto-pipeline.yml
 destroy:
   - sam delete --no-prompts --stack-name "${OKTETO_NAMESPACE}-okteto-lambda" --region us-east-1
   - okteto pipeline destroy --name vote
-  - okteto pipeline destroy --name result
+
+dependencies:
+  result:
+    repository:  https://github.com/okteto/microservices-demo
+    branch: lambda
+    wait: true
+    timeout: 15m
+    manifest: result/okteto-pipeline.yml
+external:
+  lambda:
+    icon: function
+    endpoints:
+    - name: function
+      url: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions
+  atlas:
+    icon: database
+    endpoints:
+    - name: dashboard
+      url: https://cloud.mongodb.com/v2/623d0c65c937984f4e235a41#/clusters
