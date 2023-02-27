@@ -1,0 +1,27 @@
+icon: https://github.com/okteto/multirepo-demo/raw/main/lambda-icon.jpg
+deploy:
+- name: deploy function
+  command: | 
+    sam build
+    sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --s3-prefix "${OKTETO_NAMESPACE}" --stack-name "${OKTETO_NAMESPACE}-okteto-lambda" --parameter-overrides ParameterKey=MongoDBUsername,ParameterValue=${MONGODB_USERNAME} ParameterKey=MongoDBPassword,ParameterValue=${MONGODB_PASSWORD} ParameterKey=MongoDBDatabase,ParameterValue=${MONGODB_DATABASE} ParameterKey=MongoDBHost,ParameterValue=${MONGODB_HOST}
+    aws cloudformation describe-stacks --region us-east-1 --stack-name ${OKTETO_NAMESPACE}-okteto-lambda --query "Stacks[0].Outputs[0].OutputValue" --output text > lambda-url
+    export OKTETO_EXTERNAL_LAMBDA_ENDPOINTS_FUNCTION_URL=`cat lambda-url`
+    echo "OKTETO_EXTERNAL_LAMBDA_ENDPOINTS_FUNCTION_URL=$OKTETO_EXTERNAL_LAMBDA_ENDPOINTS_FUNCTION_URL" >> $OKTETO_ENV
+
+- name: deploy vote microservice
+  command: okteto pipeline deploy --name vote -r https://github.com/okteto/microservices-demo --branch lambda --var LAMBDA_URL=`cat lambda-url` -f vote/okteto-pipeline.yml
+destroy:
+  - sam delete --no-prompts --stack-name "${OKTETO_NAMESPACE}-okteto-lambda" --region us-east-1
+  - okteto pipeline destroy --name vote
+dependencies:
+  result:
+    repository:  https://github.com/okteto/microservices-demo
+    branch: lambda
+    wait: true
+    timeout: 15m
+    manifest: result/okteto-pipeline.yml
+external:
+  lambda:
+    icon: function
+    endpoints:
+    - name: function
